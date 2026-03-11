@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VPCC Thủ Thiêm - Email Composer</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --vpcc-red: #800000;
+    --vpcc-gold: #B8860B;
+    --vpcc-blue: #1E3A8A;
+    --border: #e2e8f0;
+    --bg: #f8fafc;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    background: var(--bg);
+    color: #1e293b;
+    line-height: 1.5;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #800000 0%, #4a0000 100%);
+    padding: 20px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 4px 12px rgba(128,0,0,0.2);
+    color: white;
+  }
+  .header-info h1 { font-size: 1.4rem; font-weight: 700; text-transform: uppercase; }
+  .header-info p { font-size: 0.85rem; opacity: 0.8; }
+  .header-logo { height: 60px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+
+  /* MAIN LAYOUT */
+  .container {
+    max-width: 1200px; margin: 30px auto;
+    display: grid; grid-template-columns: 420px 1fr;
+    gap: 30px; padding: 0 20px;
+  }
+
+  .card {
+    background: #fff; border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    padding: 25px;
+  }
+  .card-title {
+    font-size: 0.9rem; font-weight: 700; text-transform: uppercase;
+    color: var(--vpcc-red); margin-bottom: 20px;
+    border-bottom: 2px solid var(--vpcc-gold); padding-bottom: 5px;
+    display: inline-block;
+  }
+
+  /* FORM ELEMENTS */
+  .field { margin-bottom: 15px; }
+  label { display: block; font-size: 0.8rem; font-weight: 600; color: #64748b; margin-bottom: 5px; }
+  input, textarea, select {
+    width: 100%; border: 1.5px solid var(--border);
+    border-radius: 8px; padding: 10px 12px;
+    font-family: inherit; font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+  input:focus, textarea:focus {
+    outline: none; border-color: var(--vpcc-red);
+    box-shadow: 0 0 0 3px rgba(128,0,0,0.1);
+  }
+
+  /* BUTTONS */
+  .btn-gen {
+    width: 100%; background: var(--vpcc-red); color: white;
+    border: none; border-radius: 8px; padding: 12px;
+    font-weight: 700; cursor: pointer; margin-top: 10px;
+    transition: background 0.2s;
+  }
+  .btn-gen:hover { background: #600000; }
+
+  /* PREVIEW AREA */
+  .preview-card {
+    background: #fff; border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .toolbar {
+    padding: 15px 25px; background: #f1f5f9;
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .btn-copy {
+    background: var(--vpcc-blue); color: white;
+    border: none; border-radius: 6px; padding: 8px 20px;
+    font-weight: 600; cursor: pointer; font-size: 0.85rem;
+  }
+  .btn-copy.success { background: #059669; }
+
+  .email-area {
+    padding: 40px; overflow-y: auto; flex: 1;
+    background: #fff;
+  }
+
+  /* TEMPLATE LIST */
+  .tpl-list { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .tpl-item {
+    padding: 6px 12px; background: #fef2f2; border: 1px solid #fecaca;
+    border-radius: 6px; font-size: 0.75rem; font-weight: 600; color: var(--vpcc-red);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .tpl-item:hover { background: var(--vpcc-red); color: white; }
+
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #334155; color: white; padding: 12px 24px;
+    border-radius: 8px; font-size: 0.9rem;
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s; z-index: 100;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  @media (max-width: 900px) {
+    .container { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-info">
+    <h1>VĂN PHÒNG CÔNG CHỨNG THỦ THIÊM</h1>
+    <p>Hệ thống kiến tạo nội dung thư tín chuyên nghiệp</p>
+  </div>
+  <img src="https://lh3.googleusercontent.com/d/1oJUnK682YvcyfsHAJzPh0ypJZdDk6_Uq" alt="Logo VPCC" class="header-logo">
+</header>
+
+<div class="container">
+  <!-- FORM NHẬP LIỆU -->
+  <div class="card">
+    <div class="card-title">Mẫu thư nhanh</div>
+    <div class="tpl-list">
+      <div class="tpl-item" onclick="loadTpl('invite')">📅 Mời ký công chứng</div>
+      <div class="tpl-item" onclick="loadTpl('request')">📁 Yêu cầu hồ sơ</div>
+      <div class="tpl-item" onclick="loadTpl('confirm')">✅ Xác nhận kết quả</div>
+      <div class="tpl-item" onclick="loadTpl('thanks')">🤝 Thư cảm ơn</div>
+    </div>
+
+    <div class="card-title">Chi tiết nội dung</div>
+    <div class="field">
+      <label>Kính gửi</label>
+      <input id="recipient" type="text" placeholder="Ông/Bà Nguyễn Văn A">
+    </div>
+    <div class="field">
+      <label>Tiêu đề (V/v)</label>
+      <input id="subject" type="text" placeholder="V/v bổ sung hồ sơ chuyển nhượng căn hộ">
+    </div>
+    <div class="field">
+      <label>Nội dung thư</label>
+      <textarea id="message" rows="8" placeholder="Nhập nội dung chính tại đây..."></textarea>
+    </div>
+    <div class="field">
+      <label>Bộ phận/Người gửi</label>
+      <input id="sender" type="text" placeholder="Phòng Nghiệp vụ 1">
+    </div>
+
+    <button class="btn-gen" onclick="generate()">✦ TẠO NỘI DUNG THƯ</button>
+  </div>
+
+  <!-- XEM TRƯỚC -->
+  <div class="preview-card">
+    <div class="toolbar">
+      <span style="font-size: 0.8rem; font-weight: 700; color: #64748b;">HÌNH ẢNH HIỂN THỊ TRONG GMAIL</span>
+      <button class="btn-copy" id="copyBtn" onclick="copyToGmail()">SAO CHÉP VÀO GMAIL</button>
+    </div>
+    <div class="email-area" id="emailArea">
+      <div id="placeholder" style="text-align:center; color:#cbd5e1; padding-top:100px;">
+        <p style="font-size: 40px;">✉</p>
+        <p>Bản xem trước sẽ hiển thị tại đây</p>
+      </div>
+      <div id="emailPreviewContent"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✓ Đã sao chép định dạng! Hãy dán (Ctrl+V) vào Gmail.</div>
+
+<script>
+  const LOGO_URL = "https://lh3.googleusercontent.com/d/1oJUnK682YvcyfsHAJzPh0ypJZdDk6_Uq";
+
+  const TEMPLATES = {
+    invite: {
+      subject: "Thông báo lịch ký hồ sơ công chứng",
+      message: "Văn phòng Công chứng Thủ Thiêm trân trọng kính mời Ông/Bà sắp xếp thời gian đến văn phòng để thực hiện việc ký kết hồ sơ.\n\nThời gian dự kiến: ...\nĐịa điểm: Số ... đường ..., TP. Thủ Đức.\n\nKhi đi vui lòng mang theo các giấy tờ bản chính để đối chiếu."
+    },
+    request: {
+      subject: "Yêu cầu cung cấp bổ sung hồ sơ",
+      message: "Qua kiểm tra hồ sơ của Ông/Bà, để có cơ sở thực hiện công chứng theo đúng quy định pháp luật, VPCC Thủ Thiêm đề nghị Ông/Bà bổ sung các giấy tờ sau:\n\n1. ...\n2. ...\n\nQuý khách có thể gửi bản chụp qua Zalo để bộ phận nghiệp vụ kiểm tra trước."
+    },
+    confirm: {
+      subject: "Thông báo kết quả giải quyết hồ sơ",
+      message: "Văn phòng Công chứng Thủ Thiêm thông báo hồ sơ công chứng của Ông/Bà đã hoàn tất.\n\nÔng/Bà có thể đến nhận kết quả tại Quầy Trả hồ sơ từ thứ Hai đến thứ Bảy hàng tuần."
+    },
+    thanks: {
+      subject: "Thư cảm ơn Quý khách hàng",
+      message: "Văn phòng Công chứng Thủ Thiêm chân thành cảm ơn Ông/Bà đã tin tưởng và sử dụng dịch vụ công chứng của chúng tôi.\n\nHy vọng sẽ tiếp tục được đồng hành cùng Quý khách trong các giao dịch tiếp theo."
+    }
+  };
+
+  function loadTpl(key) {
+    document.getElementById('subject').value = TEMPLATES[key].subject;
+    document.getElementById('message').value = TEMPLATES[key].message;
+  }
+
+  function generate() {
+    const recipient = document.getElementById('recipient').value || "Quý khách hàng";
+    const subject = document.getElementById('subject').value || "Thông báo";
+    const message = document.getElementById('message').value || "";
+    const sender = document.getElementById('sender').value || "Bộ phận Nghiệp vụ";
+
+    const html = `
+      <div id="gmail-wrapper" style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #333333; max-width: 600px; margin: 0 auto; border: 1px solid #dddddd; border-radius: 8px; overflow: hidden;">
+        <!-- Header -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #800000; padding: 20px;">
+          <tr>
+            <td style="color: #ffffff;">
+              <div style="font-size: 16px; font-weight: bold; text-transform: uppercase;">Văn phòng Công chứng Thủ Thiêm</div>
+              <div style="font-size: 11px; opacity: 0.8;">Chuyên nghiệp - Tận tâm - Đúng pháp luật</div>
+            </td>
+            <td align="right">
+              <img src="${LOGO_URL}" height="50" style="display: block;">
+            </td>
+          </tr>
+        </table>
+
+        <!-- Body -->
+        <div style="padding: 30px; background-color: #ffffff;">
+          <div style="margin-bottom: 25px; border-bottom: 2px solid #B8860B; padding-bottom: 10px;">
+            <span style="background-color: #f8f1f1; color: #800000; padding: 3px 8px; font-size: 11px; font-weight: bold; border-radius: 4px; margin-right: 10px;">V/v</span>
+            <span style="font-weight: bold; font-size: 15px; color: #333;">${subject}</span>
+          </div>
+
+          <p style="margin-bottom: 15px;">Kính gửi: <b>${recipient}</b>,</p>
+          
+          <div style="white-space: pre-line; margin-bottom: 25px;">${message}</div>
+
+          <p style="margin-bottom: 5px;">Trân trọng!</p>
+          <p style="margin-top: 0;"><b>${sender}</b></p>
+        </div>
+
+        <!-- Footer -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9f9f9; padding: 20px; border-top: 1px solid #eeeeee;">
+          <tr>
+            <td style="font-size: 12px; color: #666666; line-height: 1.5;">
+              <b>VĂN PHÒNG CÔNG CHỨNG THỦ THIÊM</b><br>
+              Địa chỉ: Số ... đường ..., TP. Thủ Đức, TP.HCM<br>
+              Điện thoại: (028) ... | Email: info@vpccthuthiem.vn
+            </td>
+          </tr>
+        </table>
+      </div>
+    `;
+
+    document.getElementById('emailPreviewContent').innerHTML = html;
+    document.getElementById('placeholder').style.display = 'none';
+  }
+
+  async function copyToGmail() {
+    const html = document.getElementById('emailPreviewContent').innerHTML;
+    if (!html) {
+      alert("Vui lòng nhấn 'Tạo nội dung thư' trước khi sao chép.");
+      return;
+    }
+
+    try {
+      const blob = new Blob([html], { type: 'text/html' });
+      const data = [new ClipboardItem({ 'text/html': blob })];
+      await navigator.clipboard.write(data);
+
+      const btn = document.getElementById('copyBtn');
+      btn.innerText = "ĐÃ SAO CHÉP!";
+      btn.classList.add('success');
+      
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+
+      setTimeout(() => {
+        btn.innerText = "SAO CHÉP VÀO GMAIL";
+        btn.classList.remove('success');
+        toast.classList.remove('show');
+      }, 3000);
+    } catch (err) {
+      alert("Trình duyệt không hỗ trợ sao chép định dạng HTML. Vui lòng quét chọn nội dung bằng chuột và nhấn Ctrl+C.");
+    }
+  }
+</script>
+</body>
+</html>
